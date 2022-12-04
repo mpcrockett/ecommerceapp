@@ -1,0 +1,11 @@
+# dotenv environment variables file
+.env
+.env.test
+
+#test files
+.test
+coverage/
+
+# Dependency directories
+node_modules/
+jspm_packages/
