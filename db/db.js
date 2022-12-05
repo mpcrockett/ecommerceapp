@@ -1,17 +1,18 @@
-const { Pool } = require('pg');
+const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-let pool = new Pool({
-  user: process.env.PGUSER,
-  password: process.env.PGPASSWORD,
-  host: process.env.PGHOST,
-  port: process.env.PGPORT,
-  database: process.env.DATABASE
+let sequelize = new Sequelize({
+    host: process.env.PGHOST,
+    port: process.env.PGPORT,
+    username: process.env.PGUSERNAME,
+    password: process.env.PGPASSWORD,
+    databse: process.env.PGDATABASE,
+    dialect: 'postgres'
 });
 
 if (process.env.NODE_ENV = 'development') {
-  pool.database = process.env.DATABASE_TEST;
+  sequelize.database = process.env.DATABASE_TEST;
   console.log(process.env.PGDATABASE_TEST);
 };
 
-module.exports = pool;
+module.exports = sequelize;

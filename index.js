@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const pool = require('./db/db');
+const sequelize = require('./db/db');
+const winston = require('winston');
 const app = express();
 
 //middleware
