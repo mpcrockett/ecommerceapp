@@ -1,5 +1,5 @@
 const request = require('supertest');
-const pool = require('../../db/db');
+const sequelize = require('../../db/db');
 
 let server;
 
@@ -19,6 +19,5 @@ describe('/api/users', () => {
       expect(res.status).toBe(200);
     });
   });
-
 
 });
