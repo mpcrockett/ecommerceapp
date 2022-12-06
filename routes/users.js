@@ -1,4 +1,4 @@
-const pool = require('../db/db');
+const pool = require('../db');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const userRouter = express.Router();

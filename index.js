@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const sequelize = require('./db/db');
 const app = express();
 
 //middleware

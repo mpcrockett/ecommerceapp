@@ -1,7 +1,7 @@
-const { Sequelize } = require('sequelize');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-let sequelize = new Sequelize({
+let pool = new Pool({
     host: process.env.PGHOST,
     port: process.env.PGPORT,
     username: process.env.PGUSERNAME,
@@ -11,8 +11,8 @@ let sequelize = new Sequelize({
 });
 
 if (process.env.NODE_ENV = 'development') {
-  sequelize.database = process.env.DATABASE_TEST;
+  pool.database = process.env.DATABASE_TEST;
   console.log(process.env.PGDATABASE_TEST);
 };
 
-module.exports = sequelize;
+module.exports = pool;
