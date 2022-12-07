@@ -1,11 +1,14 @@
-const pool = require('../db');
+const getAllUsers = require('../methods/users');
+const pool = require('../db/index');
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const userRouter = express.Router();
+const logger = require('../logging/logger');
 
+// returns all users
 userRouter.get('/', async (req, res) => {
-  console.log('Connected');
-  res.send('it worked');
+  const result = await getAllUsers();
+  res.send(result);
 });
+
 
 module.exports = userRouter;
