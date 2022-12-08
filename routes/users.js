@@ -2,7 +2,7 @@ const getAllUsers = require('../methods/users');
 const pool = require('../db/index');
 const express = require('express');
 const userRouter = express.Router();
-const logger = require('../logging/logger');
+const logger = require('../logging/index');
 
 // returns all users
 userRouter.get('/', async (req, res) => {
