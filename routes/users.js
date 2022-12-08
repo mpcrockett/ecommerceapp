@@ -1,14 +1,11 @@
-const getAllUsers = require('../methods/users');
+const getUserByUsername = require('../controllers/users');
 const pool = require('../db/index');
 const express = require('express');
 const userRouter = express.Router();
 const logger = require('../logging/index');
 
 // returns all users
-userRouter.get('/', async (req, res) => {
-  const result = await getAllUsers();
-  res.send(result);
-});
+userRouter.get('/:username', getUserByUsername);
 
 
 module.exports = userRouter;
