@@ -1,3 +1,5 @@
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const pool = require('../../db/index');
 const logger = require('../../logging/index');
@@ -16,10 +18,23 @@ const createNewUser = async (req, res) => {
 
   const salt = await bcrypt.genSalt(10);
   const encryptedPassword = await bcrypt.hash(password, salt);
-  await pool.query("INSERT INTO users (username, password, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)",
-   [username, encryptedPassword, first_name, last_name, email, date_created]);
 
-  res.status(201).send(username);
+  await pool.query("INSERT INTO users (username, password, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)",
+   [username, encryptedPassword, first_name, last_name, email]);
+
+  const id = await pool.query("SELECT user_id FROM users WHERE username = $1", [username]);
+  const token = jwt.sign({ id: id, username: username }, process.env.JWTPRIVATEKEY);
+
+  res.header('x-auth-token', token).status(201).send(username);
 };
 
-module.exports = { getUserByUsername , createNewUser };
+const getUserOrders = async (req, res) => {
+  const { username } = req.params;
+
+  const userId = await pool.query("SELECT user_id FROM users WHERE username = $1");
+
+  const orders = await pool.query("SELECT * FROM orders ")
+  return true;
+};
+
+module.exports = { getUserByUsername , createNewUser, getUserOrders };
