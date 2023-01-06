@@ -13,5 +13,7 @@ module.exports = Joi.object({
     .max(500)
     .required(),
   gender: Joi.string()
-    .valid('Women', 'Men', 'Unisex')
+    .valid('Women', 'Men', 'Unisex'),
+  price: Joi.number()
+    .integer()
 });

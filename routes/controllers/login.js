@@ -7,13 +7,14 @@ const { id } = require('../middleware/data-validation/userSchema');
 const login = async (req, res) => {
   const { username, password } = req.body;
 
-  let user = await pool.query("SELECT password, user_id FROM users WHERE username = $1", [username]);
-
+  const user = await pool.query("SELECT password, user_id FROM users WHERE username = $1", [username]);
+  const userPassword = user.rows[0].password;
   if(user.rows.length > 0 ) {
-    const validPassword = await bcrypt.compare(password, user.rows[0].password);
+    const validPassword = await bcrypt.compare(password, userPassword);
     if(validPassword) {
-      const token = jwt.sign({ id: user.rows[0].user_id, username: username }, process.env.JWTPRIVATEKEY);
-      return res.send(token);
+      const userId = user.rows[0].user_id;
+      const token = jwt.sign({ id: userId, username: username }, process.env.JWTPRIVATEKEY);
+      return res.header('x-auth-token', token).status(200).send(username);
     } 
   };
 

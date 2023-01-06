@@ -2,13 +2,14 @@ const Joi = require('joi');
 const productSchema = require('./productSchema');
 
 const validateNewProduct = (req, res, next) => {
-  const { catagory, name, description, gender } = req.body;
+  const { catagory, name, description, gender, price } = req.body;
   
   const newProduct = {
     catagory,
     name,
     description,
-    gender
+    gender, 
+    price
   };
 
   const { error, value } = productSchema.validate(newProduct);

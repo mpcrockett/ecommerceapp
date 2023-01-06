@@ -46,9 +46,18 @@ const addItemsToInventory = async (req, res) => {
 };
 
 const addItemToCart = async (req, res) => {
-  const { user_id, item_id, quantity} = req.body;
+  const user_id = req.user.id;
+  const { item_id, quantity } = req.body;
   const numberInStock = await pool.query("SELECT number_in_stock FROM items WHERE item_id = $1", [item_id]);
   if(numberInStock < quantity) return res.status(400).send("Insuffient stock.");
+
+  const checkIfAlreadyAdded = await pool.query("SELECT * FROM cart WHERE user_id = $1 AND item_id = $2", [user_id, item_id]);
+
+  if(checkIfAlreadyAdded.rows.length > 0){
+    await pool.query("UPDATE cart SET quantity = $1 WHERE user_id = $2 AND item_id = $3", [quantity, user_id, item_id]);
+    return res.status(201).send("Quantity updated.")
+  };
+
   await pool.query("INSERT INTO cart(user_id, item_id, quantity) VALUES ($1, $2, $3)", [user_id, item_id, quantity]);
   res.status(201).send("Added to cart.");
 };

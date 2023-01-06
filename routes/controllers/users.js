@@ -23,7 +23,7 @@ const createNewUser = async (req, res) => {
    [username, encryptedPassword, first_name, last_name, email]);
 
   const id = await pool.query("SELECT user_id FROM users WHERE username = $1", [username]);
-  const token = jwt.sign({ id: id, username: username }, process.env.JWTPRIVATEKEY);
+  const token = jwt.sign({ id: user.rows[0].user_id, username: username }, process.env.JWTPRIVATEKEY);
 
   res.header('x-auth-token', token).status(201).send(username);
 };
