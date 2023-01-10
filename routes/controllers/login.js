@@ -2,7 +2,6 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const pool = require('../../db/index');
-const { id } = require('../middleware/data-validation/userSchema');
 
 const login = async (req, res) => {
   const { username, password } = req.body;

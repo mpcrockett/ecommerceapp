@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const userSchema = require('./userSchema');
+const userSchema = require('./schemas/userSchema');
 
 const validateNewUser = (req, res, next) => {
   const { username, password, first_name, last_name, email } = req.body;

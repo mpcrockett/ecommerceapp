@@ -7,6 +7,9 @@ const developmentLogger = () => {
     format: combine(errors({ stack: true }), timestamp(), json()),
     transports: [new winston.transports.Console()],
     exceptionHandlers: [
+      new winston.transports.Console({
+        format: winston.format.simple(),
+      }),
       new winston.transports.File({ filename: './logging/dev-logs/exception-dev.log' }),
     ],
     rejectionHandlers: [
