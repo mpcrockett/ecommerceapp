@@ -38,7 +38,7 @@ const deleteAllItems = async (req, res) => {
 const createNewOrder = async (req, res) => {
   const user_id = req.user.id;
   const { street1, street2, city, state, zipcode } = req.address; 
-  const client = await pool.connect()
+  const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
@@ -79,6 +79,7 @@ const createNewOrder = async (req, res) => {
 
     const newOrder = await client.query("INSERT INTO orders (user_id, address_id, free_shipping, order_total) VALUES ($1, $2, $3, $4) RETURNING order_id", [user_id, addressId, free_shipping, order_total]);
     cartItems.rows.map(obj => client.query("INSERT INTO orders_items (order_id, item_id, quantity) VALUES ($1, $2, $3)", [newOrder.rows[0].order_id, obj.item_id, obj.quantity]));
+    cartItems.rows.map(obj => client.query("UPDATE items SET number_in_stock = number_in_stock - $1 WHERE item_id = $2", [obj.quantity, obj.item_id]));
     await client.query("DELETE FROM cart WHERE user_id = $1", [user_id]);
     await client.query('COMMIT');
     res.status(201).send("Order placed.");

@@ -15,6 +15,8 @@ const validateNewUser = (req, res, next) => {
 
   if(error) return res.status(400).send(error.message);
 
+  req.user = newUser;
+  
   next();
 };
 
