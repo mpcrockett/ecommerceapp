@@ -20,7 +20,11 @@ const updateCartItems = async (req, res) => {
   const array = req.body; // [{item_id: 2, quantity: 4}, {item_id: 1, quantity: 4}]
   try {
     let updates = array.map((obj) => {
-      return pool.query("UPDATE cart SET quantity = $1 WHERE user_id = $2 AND item_id = $3", [obj.quantity, user_id, obj.item_id]);
+      if(obj.quantity == 0) {
+        return pool.query("DELETE FROM cart WHERE item_id = $1 AND user_id = $2", [obj.item_id, user_id]);
+      } else {
+        return pool.query("UPDATE cart SET quantity = $1 WHERE user_id = $2 AND item_id = $3", [obj.quantity, user_id, obj.item_id]);
+      } 
     });
     await Promise.all(updates);
     return res.status(200).send("Cart updated.")
