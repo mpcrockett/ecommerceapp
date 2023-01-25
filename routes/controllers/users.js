@@ -13,9 +13,13 @@ const getUserById = async (req, res) => {
 
 const createNewUser = async (req, res) => {
   const { username, password, first_name, last_name, email } = req.user;
-  let user = await pool.query("SELECT username FROM users WHERE email = $1", [email]);
-  if(user.rows.length !== 0) return res.status(400).send("This email address is already registered.");
 
+  let user = await pool.query("SELECT username FROM users WHERE username = $1", [username]);
+  if(!user.rows.length) return res.status(400).send("This username is taken.");
+
+  user = await pool.query("SELECT username FROM users WHERE email = $1", [email]);
+  if(!user.rows.length) return res.status(400).send("This email address is already registered.");
+  
   const salt = await bcrypt.genSalt(10);
   const encryptedPassword = await bcrypt.hash(password, salt);
 
@@ -26,6 +30,37 @@ const createNewUser = async (req, res) => {
   const token = jwt.sign({ id: newUser.rows[0].user_id, username }, process.env.JWTPRIVATEKEY);
 
   res.header('x-auth-token', token).status(201).send(username);
+};
+
+const updateUser = async (req, res) => {
+  const { first_name, last_name, email } = req.userUpdates;
+  const { username, id } = req.user;
+
+  let user = await pool.query("SELECT username FROM users WHERE email = $1 AND user_id < $2", [email, id]);
+  if(!user.rows.length) return res.status(400).send("This email address is registered."); // in real life, this would be email verification with a sent code
+
+  await pool.query("UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE username = $4 AND user_id = $5", 
+  [first_name, last_name, email, username, id]);
+
+  res.status(200).send("User updated.");
+};
+
+const changeUserPassword = async (req, res) => {
+  const { currentPassword, password1 } = req.body;
+  const { id } = req.user;
+  const passwordQuery = await pool.query("SELECT password FROM users WHERE user_id = $1", [id]);
+  const userPassword = passwordQuery.rows[0];
+
+  const validPassword = await bcrypt.compare(currentPassword, userPassword);
+
+  if(!validPassword) return res.status(400).send("Password incorrect.");
+
+  const salt = await bcrypt.genSalt(10);
+  const encryptedPassword = await bcrypt.hash(password1, salt);
+
+  await pool.query("UPDATE users SET password = $1 WHERE user_id = $2", [encryptedPassword, id]);
+
+  res.status(200).send("Password updated.");
 };
 
 const getUserOrders = async (req, res) => {
@@ -96,4 +131,4 @@ const cancelUserOrder = async (req, res) => {
   };
 };
 
-module.exports = { getUserById , createNewUser, getUserOrders, cancelUserOrder };
+module.exports = { getUserById , createNewUser, getUserOrders, cancelUserOrder, updateUser, changeUserPassword };
