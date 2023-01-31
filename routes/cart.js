@@ -1,8 +1,8 @@
 const express = require('express');
-const { getUserCart, updateCartItems, deleteAllItems, createNewOrder } = require('./controllers/cart');
+const { getUserCart, updateCartItems, deleteAllItems, createNewOrder } = require('../controllers/cart');
 const cartRouter = express.Router();
-const authenticate = require('./middleware/authentication/authenticate');
-const validateAddress = require('./middleware/data-validation/address');
+const authenticate = require('../middleware/authentication/authenticate');
+const validateAddress = require('../middleware/data-validation/address');
 
 // authenticates user
 cartRouter.get('/', authenticate, getUserCart);

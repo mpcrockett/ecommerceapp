@@ -1,5 +1,5 @@
 require('dotenv').config();
-const pool = require('../../db/index');
+const pool = require('../db/index');
 
 const createNewProduct = async (req,res) => {
   const { catagory, name, description, gender } = req.product;

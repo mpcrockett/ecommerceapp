@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/mpcrockett/ecommerceapp#readme",
   "dependencies": {
+    "@joi/date": "^2.1.0",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -32,6 +33,7 @@
     "node-pg-migrate": "^6.2.2",
     "nodemon": "^2.0.20",
     "pg": "^8.8.0",
+    "swagger-ui-express": "^4.6.0",
     "winston": "^3.8.2"
   },
   "devDependencies": {

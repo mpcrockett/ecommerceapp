@@ -1,4 +1,4 @@
-const Joi = require('joi');
+const Joi = require('joi').extend(require('@joi/date'));;
 const { joiPasswordExtendCore } = require('joi-password');
 const joiPassword = Joi.extend(joiPasswordExtendCore);
 
@@ -24,6 +24,7 @@ const newUserSchema = Joi.object({
     .max(25)
     .required(),
   email: Joi.string().email().required(),
+  birthday: Joi.date().format('YYYY-MM-DD').utc()
 });
 
 const userUpdatesSchema = Joi.object({
@@ -35,7 +36,7 @@ const userUpdatesSchema = Joi.object({
     .min(3)
     .max(25)
     .required(),
-  email: Joi.string().email().required(),
+  birthday: Joi.date().format('YYYY-MM-DD').utc()
 });
 
 const passwordSchema = Joi.object({

@@ -1,5 +1,5 @@
 require('dotenv').config();
-const pool = require('../../db/index');
+const pool = require('../db/index');
 
 const getUserCart = async (req, res) => {
   const user_id = req.user.id;
