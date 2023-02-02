@@ -2,47 +2,49 @@ require('dotenv').config();
 const logger = require('../logging/index');
 const User = require('../models/User');
 const Order = require('../models/Order');
+const Address = require('../models/Address');
 
 
 const getUserById = async (req, res) => {
-  const{ user_id } = req.user;
-  const response = await User.getUserById(user_id);
-  if(response.length === 0) return res.status(404).send('User not found.');
+  const user = new User(req.user);
+  const response = await user.getUserById();
+  if(!response) return res.status(404).send('User not found.');
   return res.status(200).send(response);
 };
 
 const createNewUser = async (req, res) => {
-  const { username, email } = req.user;
+  const user = new User(req.user);
+  const usernameTaken = await user.getUserIdByUsername();
+  if(usernameTaken) return res.status(400).send("This username is taken.");
 
-  let user = await User.getUserIdByUsername(username);
-  if(user.length > 0) return res.status(400).send("This username is taken.");
-
-  user = await User.getUserIdByEmail(email);
-  if(user.length > 0) return res.status(400).send("This email address is already registered.");
+  const emailRegistered = await user.getUserIdByEmail();
+  if(emailRegistered) return res.status(400).send("This email address is already registered.");
   
-  const user_id = await User.createNewUser(req.user);
-  const token = await User.generateUserAccessToken({user_id, username});
+  await user.createNewUser();
+  const token = await user.generateUserAccessToken();
 
   res.header('x-auth-token', token).status(201).send("User created.");
-};
+}; 
 
 const updateUser = async (req, res) => {
-  const updatedUser = { ...req.updatedUser, ...req.user };
-
-  await User.updateUserById(updatedUser);
+  const updateUser = { ...req.updatedUser, ...req.user };
+  const user = new User(updateUser);
+  await user.updateUserById();
   
   res.status(200).send("User updated.");
 };
 
 const changeUserPassword = async (req, res) => {
-  const { current_password, password_one } = req.body;
+  const new_password = req.body.password_one;
+  const password = req.body.new_password;
   const { username } = req.user;
   
-  const validPassword = await User.validateUserPassword(username, current_password);
+  const user = new User({ username, password, new_password });
+  const validPassword = await user.validateUserPassword();
 
   if(!validPassword) return res.status(400).send("Password incorrect.");
 
-  await User.updateUserPassword(username, password_one );
+  await user.updateUserPassword();
 
   res.status(200).send("Password updated.");
 };
@@ -52,6 +54,18 @@ const getUserOrders = async (req, res) => {
   const response = await User.getUserOrders(user_id);
   if(!response) return res.status(404).send("No orders found.");
   return res.status(200).send(response);
+};
+
+const getUserOrder = async (req, res) => {
+  const { user_id } = req.user;
+  const { order_id } = req.body;
+  const order = new Order({order_id, user_id});
+  let response = await order.getOrderByOrderId();
+  if(!response) return res.status(404).send("Order not found.")
+  const address = await Address.getAddressById(response.address_id);
+  response.address = address;
+  res.status(200).send(response);
+
 };
 
 const cancelUserOrder = async (req, res) => {
@@ -65,4 +79,9 @@ const cancelUserOrder = async (req, res) => {
   res.status(200).send("Order canceled.")
 };
 
-module.exports = { getUserById , createNewUser, getUserOrders, cancelUserOrder, updateUser, changeUserPassword };
+const deleteUserById = async (req, res) => {
+  const user_id = req.params.id;
+  await User.deleteUserById(user_id);
+};
+
+module.exports = { getUserById , createNewUser, getUserOrders, getUserOrder, cancelUserOrder, updateUser, changeUserPassword, getUserOrder, deleteUserById};

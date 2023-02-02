@@ -4,98 +4,76 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 module.exports = class User {
+  constructor(userObj) {
+    this.user_id = userObj.user_id;
+    this.username = userObj.username;
+    this.password = userObj.password;
+    this.email = userObj.email;
+    this.first_name = userObj.first_name;
+    this.last_name = userObj.last_name;
+    this.birthday = userObj.birthday;
+    this.loyalty_acct = userObj.loyalty_acct;
+    this.new_password = userObj.new_password;
+  };
 
-  static async getUserById(user_id) {
-    const user = await pool.query("SELECT username, first_name, last_name, email, birthday, loyalty_acct FROM users WHERE user_id = $1", [user_id]);
+  async getUserById() {
+    const user = await pool.query("SELECT username, first_name, last_name, email, birthday, loyalty_acct FROM users WHERE user_id = $1", [this.user_id]);
     return user.rows[0];
   }
 
-  static async getUserIdByUsername(username) {
-    let user = await pool.query("SELECT user_id FROM users WHERE username = $1", [username]);
-    return user.rows;
+  async getUserIdByUsername() {
+    let user = await pool.query("SELECT user_id FROM users WHERE username = $1", [this.username]);
+    return user.rows.length === 0 ? false : user.rows[0].user_id;
   }
 
-  static async getUserIdByEmail(email) {
-    let user = await pool.query("SELECT user_id FROM users WHERE email = $1", [email]);
-    return user.rows;
+  async getUserIdByEmail() {
+    let user = await pool.query("SELECT user_id FROM users WHERE email = $1", [this.email]);
+    return user.rows.length === 0 ? false : user.rows[0].user_id;
   }
 
-  static async createNewUser(user) {
-    const { username, password, first_name, last_name, email } = user;
-
+  async createNewUser() {
     const salt = await bcrypt.genSalt(10);
-    const encryptedPassword = await bcrypt.hash(password, salt);
+    const encryptedPassword = await bcrypt.hash(this.password, salt);
   
     const newUser = await pool.query("INSERT INTO users (username, password, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5) RETURNING user_id",
-     [username, encryptedPassword, first_name, last_name, email]
+     [this.username, encryptedPassword, this.first_name, this.last_name, this.email]
     );
 
-    const user_id = newUser.rows[0].user_id;
-    return user_id;
+    this.user_id = newUser.rows[0].user_id;
   }
 
-  static async updateUserById(user) {
-    const { user_id, username, first_name, last_name, birthday } = user;
+  async updateUserById() {
     await pool.query("UPDATE users SET first_name = $1, last_name = $2, birthday = $3 WHERE username = $4 AND user_id = $5", 
-    [first_name, last_name, birthday, username, user_id]);
+    [this.first_name, this.last_name, this.birthday, this.username, this.user_id]);
   }
 
-  static async getUserOrdersById(user_id) {
-    const orders = await pool.query(
-      `SELECT orders.order_id, addresses.address_id, orders.order_total, orders_items.quantity,
-       products.name, orders.shipped, orders.completed, orders.processing, items.size, items.color
-       FROM orders JOIN addresses ON orders.address_id = addresses.address_id
-       JOIN orders_items ON orders.order_id = orders_items.order_id
-       JOIN items ON orders_items.item_id = items.item_id
-       JOIN products ON items.product_id = products.product_id
-       WHERE orders.user_id = $1`, [user_id]
-    );
-
-    const response = orders.rows.reduce((acc, obj) => {
-      let newObj;
-      const { order_id, address_id, order_total, quantity, name, shipped, completed, processing, size, color } = obj;
-      if (acc[order_id]) {
-        newObj = {...acc};
-        newObj[order_id].items = [...newObj[order_id].items, { name, quantity, size, color}];
-      } else {
-        newObj = {...acc, [order_id]: { 
-          address_id,
-          order_total,
-          shipped,
-          completed,
-          processing,
-          items: [{
-            name,
-            quantity,
-            size,
-            color
-          }]
-        }};
-      };
-      return newObj;
-    }, {});
-
-    return response;
-  }
-
-  static async generateUserAccessToken(user) {
-    const { user_id, username } = user;
-    const getAdmin = await pool.query("SELECT is_admin FROM users WHERE user_id = $1", [user_id]);
-    const { is_admin } = getAdmin.rows[0];
-    const token = jwt.sign({ user_id, username, is_admin }, process.env.JWTPRIVATEKEY);
+  async generateUserAccessToken() {
+    const getAdmin = await pool.query("SELECT is_admin FROM users WHERE user_id = $1", [this.user_id]);
+    const is_admin = getAdmin.rows[0].is_admin;
+    const token = jwt.sign({ user_id: this.user_id, username: this.username, is_admin: is_admin }, process.env.JWTPRIVATEKEY);
     return token;
   }
 
-  static async validateUserPassword(username, password) {
-    const user = await pool.query("SELECT password FROM users WHERE username = $1", [username]);
+  async validateUserPassword() {
+    const user = await pool.query("SELECT password FROM users WHERE username = $1", [this.username]);
     const userPassword = user.rows[0].password;
-    const validPassword = await bcrypt.compare(password, userPassword);
+    const validPassword = await bcrypt.compare(this.password, userPassword);
     return validPassword;
   }
 
-  static async updateUserPassword(username, password) {
+  async updateUserPassword() {
     const salt = await bcrypt.genSalt(10);
-    const encryptedPassword = await bcrypt.hash(password, salt);
-    await pool.query("UPDATE users SET password = $1 WHERE username = $2", [encryptedPassword, username]);
+    const encryptedPassword = await bcrypt.hash(this.new_password, salt);
+    await pool.query("UPDATE users SET password = $1 WHERE username = $2", [encryptedPassword, this.username]);
+  }
+
+  static async getUserOrdersById(user_id) {
+    const orders = await pool.query("SELECT order_id, order_total, free_shipping, order_status FROM orders WHERE user_id = $1", [user_id]);
+    return orders.rows ? orders.rows : false;
+    
+  }
+
+  static async deleteUserById(user_id) {
+    await pool.query("DELETE FROM users WHERE user_id = $1", [user_id]);
   }
 };

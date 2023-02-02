@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const itemSchema = require('./schemas/itemSchema');
 
-const validateNewItem = (req, res, next) => {
+const validateItem = (req, res, next) => {
   const product_id = req.params.id;
   const { size, number_in_stock, color } = req.body;
   
@@ -16,9 +16,9 @@ const validateNewItem = (req, res, next) => {
 
   if(error) return res.status(400).send(error.message);
 
-  req.product = newItem;
+  req.item = newItem;
   
   next();
 };
 
-module.exports = validateNewItem;
+module.exports = validateItem;

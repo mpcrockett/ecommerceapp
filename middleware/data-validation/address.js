@@ -3,15 +3,9 @@ const addressSchema = require('./schemas/addressSchema');
 
 const validateAddress = (req, res, next) => {
   
-  const { street1, street2, city, state, zipcode } = req.body;
+  const { first_name, last_name, street_one, street_two, city, state, zipcode } = req.body;
   
-  const newAddress = {
-   street1,
-   street2,
-   city,
-   state,
-   zipcode
-  };
+  const newAddress = { first_name, last_name, street_one, street_two, city, state, zipcode };
 
   const { error, value } = addressSchema.validate(newAddress);
 

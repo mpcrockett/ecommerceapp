@@ -1,11 +1,19 @@
 const Joi = require('joi');
 
 module.exports = Joi.object({
-  street1: Joi.string()
+  first_name: Joi.string()
+    .min(2)
+    .max(50)
+    .required(),
+  last_name: Joi.string()
+    .min(2)
+    .max(50)
+    .required(),
+  street_one: Joi.string()
     .min(4)
     .max(50)
     .required(),
-  street2: Joi.string()
+  street_two: Joi.string()
     .max(50),
   city: Joi.string()
     .min(3)
