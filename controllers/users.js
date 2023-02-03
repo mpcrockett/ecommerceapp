@@ -1,5 +1,4 @@
 require('dotenv').config();
-const logger = require('../logging/index');
 const User = require('../models/User');
 const Order = require('../models/Order');
 const Address = require('../models/Address');
@@ -51,7 +50,7 @@ const changeUserPassword = async (req, res) => {
 
 const getUserOrders = async (req, res) => {
   const { user_id } = req.user;
-  const response = await User.getUserOrders(user_id);
+  const response = await User.getUserOrdersById(user_id);
   if(!response) return res.status(404).send("No orders found.");
   return res.status(200).send(response);
 };
@@ -80,8 +79,13 @@ const cancelUserOrder = async (req, res) => {
 };
 
 const deleteUserById = async (req, res) => {
-  const user_id = req.params.id;
-  await User.deleteUserById(user_id);
+  try {
+    const user_id = req.params.id;
+    await User.deleteUserById(user_id);
+    res.status(200).send("User deleted.")
+  } catch (error) {
+    res.status(500).send(error.message)
+  }
 };
 
 module.exports = { getUserById , createNewUser, getUserOrders, getUserOrder, cancelUserOrder, updateUser, changeUserPassword, getUserOrder, deleteUserById};

@@ -10,7 +10,7 @@ module.exports = Joi.object({
     .required(),
   description: Joi.string()
     .min(3)
-    .max(500)
+    .max(250)
     .required(),
   gender: Joi.string()
     .valid('Women', 'Men', 'Unisex'),

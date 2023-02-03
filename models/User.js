@@ -4,16 +4,16 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 module.exports = class User {
-  constructor(userObj) {
-    this.user_id = userObj.user_id;
-    this.username = userObj.username;
-    this.password = userObj.password;
-    this.email = userObj.email;
-    this.first_name = userObj.first_name;
-    this.last_name = userObj.last_name;
-    this.birthday = userObj.birthday;
-    this.loyalty_acct = userObj.loyalty_acct;
-    this.new_password = userObj.new_password;
+  constructor(obj) {
+    this.user_id = obj.user_id;
+    this.username = obj.username;
+    this.password = obj.password;
+    this.email = obj.email;
+    this.first_name = obj.first_name;
+    this.last_name = obj.last_name;
+    this.birthday = obj.birthday;
+    this.loyalty_acct = obj.loyalty_acct;
+    this.new_password = obj.new_password;
   };
 
   async getUserById() {
@@ -49,8 +49,8 @@ module.exports = class User {
 
   async generateUserAccessToken() {
     const getAdmin = await pool.query("SELECT is_admin FROM users WHERE user_id = $1", [this.user_id]);
-    const is_admin = getAdmin.rows[0].is_admin;
-    const token = jwt.sign({ user_id: this.user_id, username: this.username, is_admin: is_admin }, process.env.JWTPRIVATEKEY);
+    const is_admin = this.is_admin || getAdmin.rows[0].is_admin;
+    const token = jwt.sign({ user_id: this.user_id, username: this.username, is_admin }, process.env.JWTPRIVATEKEY);
     return token;
   }
 
@@ -69,11 +69,14 @@ module.exports = class User {
 
   static async getUserOrdersById(user_id) {
     const orders = await pool.query("SELECT order_id, order_total, free_shipping, order_status FROM orders WHERE user_id = $1", [user_id]);
-    return orders.rows ? orders.rows : false;
-    
+    return orders.rows.length > 0 ? orders.rows : false;
   }
 
   static async deleteUserById(user_id) {
     await pool.query("DELETE FROM users WHERE user_id = $1", [user_id]);
+  }
+  //for testing
+  static async deleteAllUsers() {
+    await pool.query("DELETE FROM users WHERE user_id > 73");
   }
 };

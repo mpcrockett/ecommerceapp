@@ -3,14 +3,14 @@ const Address = require("../models/Address");
 const Cart = require("../models/Cart");
 
 module.exports = class Order {
-  constructor(orderObj) {
-    this.order_id = orderObj.order_id;
-    this.user_id = orderObj.user_id;
-    this.address_id = orderObj.address_id;
-    this.items = orderObj.items;
-    this.free_shipping = orderObj.free_shipping;
-    this.order_status = orderObj.order_status;
-    this.order_total = orderObj.order_total;
+  constructor(obj) {
+    this.order_id = obj.order_id;
+    this.user_id = obj.user_id;
+    this.address_id = obj.address_id;
+    this.items = obj.items;
+    this.free_shipping = obj.free_shipping;
+    this.order_status = obj.order_status;
+    this.order_total = obj.order_total;
   }
   
   static async getOrderStatusById(order_id) {
@@ -39,6 +39,7 @@ module.exports = class Order {
       return false;
     } finally {
       client.release();
+      return
     }
   }
 
@@ -61,6 +62,7 @@ module.exports = class Order {
       return false
     } finally {
       client.release();
+      return;
     };
   }
 
@@ -72,15 +74,20 @@ module.exports = class Order {
     JOIN items ON orders_items.item_id = items.item_id
     JOIN products ON items.product_id = products.product_id
     WHERE orders.order_id = $1`, [this.order_id]
-  );
+    );
 
-  const result = order.rows;
-  this.address_id = result[0].address_id;
-  this.free_shipping = result[0].free_shipping;
-  this.order_total = result[0].order_total;
-  this.order_status = result[0].order_status;
-  this.items = result.map(obj =>  ({name: obj.name, brand: obj.brand, price: obj.price, gender: obj.gender, size: obj.size, color: obj.color, quantity: obj.quantity}) );
-  return this;
-  }
+    const result = order.rows;
+    this.address_id = result[0].address_id;
+    this.free_shipping = result[0].free_shipping;
+    this.order_total = result[0].order_total;
+    this.order_status = result[0].order_status;
+    this.items = result.map(obj =>  ({name: obj.name, brand: obj.brand, price: obj.price, gender: obj.gender, size: obj.size, color: obj.color, quantity: obj.quantity}) );
+    return this;
+  };
   
+  //for testing
+  static async deleteAllOrders() {
+    await pool.query("DELETE FROM orders WHERE order_id > 25");
+    return;
+  };
 };
