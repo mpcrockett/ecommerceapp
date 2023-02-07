@@ -81,7 +81,7 @@ module.exports = class Order {
       return false;
     } finally {
       client.release();
-      return
+      return;
     }
   }
   

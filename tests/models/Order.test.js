@@ -45,6 +45,7 @@ describe('Order model', () => {
     await Order.deleteAllOrders();
     await Address.deleteAllAddresses();
     await User.deleteAllUsers();
+    jest.restoreAllMocks();
   });
 
   describe('Create new order method', () => {
@@ -131,6 +132,13 @@ describe('Order model', () => {
       expect(afterItem1).toEqual(beforeItem1 + items[0].quantity);
       expect(afterItem2).toEqual(beforeItem2 + items[1].quantity);
     });
+
+    // it('returns false if an error occurs', async () => {
+    //   const orderSpy = jest.spyOn(Order, 'cancelOrderById');
+    //   orderSpy.mockImplementationOnce(() => { throw new Error('Something went wrong') });
+    //   const cancelOrder = await Order.cancelOrderById(order.order_id);
+    //   expect(cancelOrder).toBeFalsy();
+    // });
   });
 
   describe('Delete all orders static method', () => {

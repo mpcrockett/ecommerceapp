@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const pool = require('../db/index');
 const User = require('../models/User');
 
-const login = async (req, res) => {
+module.exports = async (req, res) => {
   const user = new User(req.body);
   const validPassword = await user.validateUserPassword();
 
@@ -18,4 +18,3 @@ const login = async (req, res) => {
   return res.status(401).send("Invalid username or password.");
 };
 
-module.exports = { login };
