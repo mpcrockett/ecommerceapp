@@ -4,6 +4,7 @@ const User = require("../../models/User");
 const jwt = require('jsonwebtoken'); 
 const bcrypt = require('bcrypt');
 const Order = require("../../models/Order");
+const Address = require("../../models/Address");
 require('dotenv').config();
 
 describe("User Model", () => {
@@ -148,8 +149,18 @@ describe("User Model", () => {
       const newUser = new User(user);
       await newUser.createNewUser();
       const { user_id } = newUser;
+      const address = new Address({
+        first_name: 'Sally',
+        last_name: 'Smith',
+        street_one: '123 Main St',
+        street_two: 'Apt A',
+        city: 'City',
+        state: 'ST',
+        zipcode: '12345'
+      });
+      await address.createNewAddress();
       const order = {
-        address_id: 1,
+        address_id: address.address_id,
         free_shipping: true,
         order_total: 100
       };

@@ -32,6 +32,12 @@ module.exports = class Address {
 
   static async deleteAddressById(address_id) {
     await pool.query("DELETE FROM addresses WHERE address_id = $1", [address_id]);
+    return;
+  }
+
+  static async deleteAllAddresses() {
+    await pool.query("DELETE FROM addresses WHERE address_id > 0");
+    return;
   }
 
 };

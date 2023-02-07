@@ -77,6 +77,6 @@ module.exports = class User {
   }
   //for testing
   static async deleteAllUsers() {
-    await pool.query("DELETE FROM users WHERE user_id > 73");
+    await pool.query("DELETE FROM users WHERE user_id > 0");
   }
 };

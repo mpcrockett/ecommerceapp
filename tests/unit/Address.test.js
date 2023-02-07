@@ -76,4 +76,15 @@ describe("Address Model", () => {
       expect(search).toBeFalsy();
     });
   });
+
+  describe('Delete all addresses static method', () => {
+    it('deletes all addresses', async () => {
+      await address.createNewAddress();
+      address.city = 'City2';
+      await address.createNewAddress();
+      await Address.deleteAllAddresses();
+      const checkDb = await pool.query("SELECT * FROM addresses");
+      expect(checkDb.rows.length).toEqual(0);
+    })
+  });
 });

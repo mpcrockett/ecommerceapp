@@ -21,7 +21,7 @@ module.exports = class Cart {
 
   async getCartByUserId() {
     const cartItems = await pool.query(`
-      SELECT cart.user_id, cart.item_id, items.product_id, products.name, items.size, cart.quantity, products.price::numeric FROM cart
+      SELECT cart.user_id, cart.item_id, items.product_id, products.name, items.size, cart.quantity, products.price FROM cart
       JOIN items
       ON cart.item_id = items.item_id
       JOIN products
