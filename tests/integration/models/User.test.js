@@ -1,10 +1,10 @@
 
-const pool = require("../../db");
-const User = require("../../models/User");
+const pool = require("../../../db");
+const User = require("../../../models/User");
 const jwt = require('jsonwebtoken'); 
 const bcrypt = require('bcrypt');
-const Order = require("../../models/Order");
-const Address = require("../../models/Address");
+const Order = require("../../../models/Order");
+const Address = require("../../../models/Address");
 require('dotenv').config();
 
 describe("User Model", () => {
@@ -23,10 +23,12 @@ describe("User Model", () => {
   afterEach(async () => {
     await Order.deleteAllOrders();
     await User.deleteAllUsers();
+    return;
   })
 
   afterAll(async () => {
     await User.deleteAllUsers();
+    return;
   });
 
   describe("New user method", () => {

@@ -1,5 +1,5 @@
-const Address = require("../../models/Address");
-const pool = require("../../db");
+const Address = require("../../../models/Address");
+const pool = require("../../../db");
 
 describe("Address Model", () => {
   let address;

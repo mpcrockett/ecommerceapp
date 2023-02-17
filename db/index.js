@@ -11,7 +11,7 @@ let config = {
   dialect: 'postgres'
 };
 
-if (process.env.NODE_ENV == 'development') {
+if (process.env.NODE_ENV == 'development' || process.env.NODE_ENV === "test") {
   config.database = process.env.PGDATABASE_TEST;
 };
 

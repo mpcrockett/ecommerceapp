@@ -1,8 +1,8 @@
-const pool = require("../../db");
-const Address = require("../../models/Address");
-const Cart = require("../../models/Cart");
-const Order = require("../../models/Order");
-const User = require("../../models/User");
+const pool = require("../../../db");
+const Address = require("../../../models/Address");
+const Cart = require("../../../models/Cart");
+const Order = require("../../../models/Order");
+const User = require("../../../models/User");
 
 
 describe('Order model', () => {

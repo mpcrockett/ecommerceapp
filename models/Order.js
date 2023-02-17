@@ -15,6 +15,7 @@ module.exports = class Order {
 
   async createNewOrder() {
     const client = await pool.connect();
+    let orderPlaced;
     try {
       await client.query('BEGIN');
       const newOrder = await client.query("INSERT INTO orders (user_id, address_id, free_shipping, order_total) VALUES($1, $2, $3, $4) RETURNING order_id",
@@ -25,14 +26,14 @@ module.exports = class Order {
       this.items.map(obj => client.query("UPDATE items SET number_in_stock = number_in_stock - $1 WHERE item_id = $2", [obj.quantity, obj.item_id]));
       await client.query("DELETE FROM cart WHERE user_id = $1", [this.user_id]);
       await client.query('COMMIT');
-      return true
+      orderPlaced = true;
     } catch (e) {
       await client.query('ROLLBACK');
       await client.query("DELETE FROM addresses WHERE address_id = $1", [this.address_id]);
-      return false
+      orderPlaced = false;
     } finally {
       client.release();
-      return;
+      return orderPlaced;
     };
   };
 

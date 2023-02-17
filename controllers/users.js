@@ -53,7 +53,7 @@ module.exports = {
   },
   async getUserOrder(req, res) {
     const { user_id } = req.user;
-    const { order_id } = req.body;
+    const order_id = req.params.id;
     const order = new Order({order_id, user_id});
     let response = await order.getOrderByOrderId();
     if(!response) return res.status(404).send("Order not found.")

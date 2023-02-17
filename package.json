@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "babel index.js -d dist",
-    "start": "npm run build && node index.js",
+    "start": "npm run build && nodemon index.js",
     "start:dev": "npm run build && nodemon index.js",
-    "test": "jest --runInBand --verbose --coverage",
+    "test": "npm run build && jest --runInBand --verbose --coverage",
     "migrate": "node-pg-migrate"
   },
   "repository": {
@@ -22,7 +22,7 @@
   "homepage": "https://github.com/mpcrockett/ecommerceapp#readme",
   "dependencies": {
     "@joi/date": "^2.1.0",
-    "bcrypt": "^5.1.0",
+    "bcrypt": "^5.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",

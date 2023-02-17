@@ -5,7 +5,7 @@ const winston = require('winston');
 
 let logger;
 
-if(process.env.NODE_ENV == 'development') {
+if(process.env.NODE_ENV == 'development' || process.env.NODE_ENV === "test") {
   logger = developmentLogger();
 } else {
   logger = productionLogger();

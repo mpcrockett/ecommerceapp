@@ -14,8 +14,11 @@ module.exports = {
   async updateCartItems(req, res) {
     const cart = new Cart({ user_id: req.user.user_id, items: req.body });
     const updated = await cart.updateCartItems();
-    if(!updated) return res.status(500).send("Something went wrong.");
-    res.status(200).send("Cart updated.");
+    if(!updated) {
+      return res.status(500).send("Something went wrong.")
+    } else {
+      return res.status(200).send("Cart updated.")
+    };
   },
   async deleteAllItems(req, res) {
     const cart = new Cart({user_id: req.user.id});
@@ -42,7 +45,10 @@ module.exports = {
     order.free_shipping = free_shipping;
 
     const orderPlaced = await order.createNewOrder();
-    if(orderPlaced) return res.status(201).send("Order placed.");
-    res.status(500).send("Something went wrong.");
+    if(orderPlaced) {
+      return res.status(201).send("Order placed.")
+    } else {
+      return res.status(500).send("Something went wrong.")
+    };
   }
 };

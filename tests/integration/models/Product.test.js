@@ -1,5 +1,5 @@
-const pool = require('../../db/index');
-const Product = require('../../models/Product');
+const pool = require('../../../db/index');
+const Product = require('../../../models/Product');
 
 describe('Product Model', () => {
   let product;

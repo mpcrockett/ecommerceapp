@@ -13,7 +13,7 @@ module.exports = class Cart {
     const item = this.items[0];
     const checkIfAlreadyAdded = await pool.query("SELECT * FROM cart WHERE user_id = $1 AND item_id = $2", [this.user_id, item.item_id]);
     if(checkIfAlreadyAdded.rows.length > 0) {
-      await this.updateCartItems();
+      await pool.query("UPDATE cart SET quantity = quantity + $1 WHERE user_id = $2 AND item_id = $3", [item.quantity, this.user_id, item.item_id]);
       return
     };
     await pool.query("INSERT INTO cart(user_id, item_id, quantity) VALUES ($1, $2, $3)", [this.user_id, item.item_id, item.quantity]);
@@ -21,7 +21,7 @@ module.exports = class Cart {
 
   async getCartByUserId() {
     const cartItems = await pool.query(`
-      SELECT cart.user_id, cart.item_id, items.product_id, products.name, items.size, cart.quantity, products.price FROM cart
+      SELECT cart.user_id, cart.item_id, items.product_id, products.name, items.size, cart.quantity, products.price::numeric FROM cart
       JOIN items
       ON cart.item_id = items.item_id
       JOIN products
@@ -54,19 +54,18 @@ module.exports = class Cart {
   }
 
   async updateCartItems() {
-    try {
-      let updates = this.items.map((item) => {
-        if(item.quantity > 0) {
-          return pool.query("UPDATE cart SET quantity = quantity + $1 WHERE user_id = $2 AND item_id = $3", [item.quantity, this.user_id, item.item_id]);
-        } else {
-          return pool.query("UPDATE cart SET quantity = quantity + $1 WHERE user_id = $2 AND item_id = $3", [item.quantity, this.user_id, item.item_id]);
-        } 
-      });
-      await Promise.all(updates);
-      return true;
-    } catch (error) {
-      return false;
-    }
+    const queries = this.items.map(item => {
+      let string = "UPDATE cart SET quantity = $1 WHERE user_id = $2 AND item_id = $3"
+      let params = [item.quantity, this.user_id, item.item_id];
+      if(item.quantity === 0) {
+        string = "DELETE FROM cart WHERE user_id = $1 AND item_id = $2";
+        params = [this.user_id, item.item_id];
+      };
+      const db = pool.query(string, params);
+      return db
+    });
+    const result = await Promise.all(queries);
+    return result;
   }
 
   async deleteAllCartItems() {

@@ -1,6 +1,6 @@
-const pool = require('../../db');
-const Cart = require('../../models/Cart');
-const User = require('../../models/User');
+const pool = require('../../../db');
+const Cart = require('../../../models/Cart');
+const User = require('../../../models/User');
 
 describe('Cart Model', () => {
 
@@ -82,9 +82,9 @@ describe('Cart Model', () => {
       expect(Object.keys(userCart)).toEqual(expect.arrayContaining(['user_id', 'items', 'cart_total', 'free_shipping']));
     });
 
-    it('returns the total of items added to cart on carts > $75', async() => {
+    it('returns the total of items added to cart on carts > $75', async () => {
       const userCart = await cart.getCartByUserId();
-      const getPrice = await pool.query("SELECT price FROM products JOIN items ON products.product_id = items.product_id WHERE item_id = $1",
+      const getPrice = await pool.query("SELECT price::numeric FROM products JOIN items ON products.product_id = items.product_id WHERE item_id = $1",
         [cart.items[0].item_id]);
       const { price } = getPrice.rows[0];
       const cartTotal = price * cart.items[0].quantity;
@@ -92,15 +92,56 @@ describe('Cart Model', () => {
     });
 
     it('returns the total of items added to cart on carts < $75 plus 10.99', async () => {
-      const newItem = {item_id: 5, quantity: 1}; // price is $28
-      cart.items = [{ item_id: 1, quantity: 0}, newItem];
+      const newItem = {item_id: 5, quantity: 1};
+      cart.items = [newItem];
+      await cart.addItemToCart(); // price is $28
+      cart.items = [{ item_id: 1, quantity: 0}];
       await cart.updateCartItems();
       const userCart = await cart.getCartByUserId();
-      const getPrice = await pool.query("SELECT price FROM products JOIN items ON products.product_id = items.product_id WHERE item_id = $1",
+      const getPrice = await pool.query("SELECT price::numeric FROM products JOIN items ON products.product_id = items.product_id WHERE item_id = $1",
         [newItem.item_id]);
       const { price } = getPrice.rows[0];
       const cartTotal = price * newItem.quantity;
       expect(userCart.order_total).toEqual(cartTotal + 10.99);
+    });
+  });
+
+  describe('Update cart method', () => {
+    let user;
+    let cart;
+    let token;
+
+    beforeEach( async () => {
+      user = new User({
+        username: 'user',
+        password: '12345!!AAbb',
+        email: 'sally@smith.com',
+        first_name: 'Sally',
+        last_name: 'Smith'
+      });
+      await user.createNewUser();
+      token = await user.generateUserAccessToken();
+      cart = new Cart({
+        user_id: user.user_id,
+        items: [{ item_id: 1, quantity: 1}]
+      });
+      await cart.addItemToCart();
+      cart.items = [{item_id: 2, quantity: 2}];
+      await cart.addItemToCart();
+    });
+
+    afterEach( async() => {
+      await cart.deleteAllCartItems();
+      await User.deleteAllUsers();
+    });
+
+    it('updates the quantity of items in a users cart', async () => {
+      cart.items = [{ item_id: 1, quantity: 2}, {item_id: 2, quantity: 3}];
+      await cart.updateCartItems();
+      const checkDb1 = await pool.query('SELECT quantity FROM cart WHERE user_id = $1 AND item_id = $2', [cart.user_id, cart.items[0].item_id]);
+      const checkDb2 = await pool.query('SELECT quantity FROM cart WHERE user_id = $1 AND item_id = $2', [cart.user_id, cart.items[1].item_id]);
+      expect(checkDb1.rows[0].quantity).toEqual(2);
+      expect(checkDb2.rows[0].quantity).toEqual(3);
     });
   });
 
