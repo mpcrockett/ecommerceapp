@@ -18,7 +18,7 @@ module.exports = class User {
 
   async getUserById() {
     const user = await pool.query("SELECT username, first_name, last_name, email, birthday, loyalty_acct FROM users WHERE user_id = $1", [this.user_id]);
-    return user.rows[0].length === 0 ? false : user.rows[0]; 
+    return user.rows[0]; 
   }
 
   async getUserIdByUsername() {
@@ -74,6 +74,7 @@ module.exports = class User {
 
   static async deleteUserById(user_id) {
     await pool.query("DELETE FROM users WHERE user_id = $1", [user_id]);
+    return;
   }
   //for testing
   static async deleteAllUsers() {

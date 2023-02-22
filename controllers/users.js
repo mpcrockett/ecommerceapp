@@ -32,8 +32,8 @@ module.exports = {
     res.status(200).send("User updated.");
   },
   async changeUserPassword(req, res) {
-    const new_password = req.body.password_one;
-    const password = req.body.new_password;
+    const new_password = req.new_password;
+    const password = req.current_password;
     const { username } = req.user;
   
     const user = new User({ username, password, new_password });
@@ -55,8 +55,8 @@ module.exports = {
     const { user_id } = req.user;
     const order_id = req.params.id;
     const order = new Order({order_id, user_id});
-    let response = await order.getOrderByOrderId();
-    if(!response) return res.status(404).send("Order not found.")
+    const response = await order.getOrderByOrderId();
+    if(!response) return res.status(404).send("Order not found.");
     const address = await Address.getAddressById(response.address_id);
     response.address = address;
     res.status(200).send(response);   
@@ -72,12 +72,8 @@ module.exports = {
     res.status(200).send("Order canceled.")
   },
   async deleteUserById(req, res) {
-    try {
-      const user_id = req.params.id;
-      await User.deleteUserById(user_id);
-      res.status(200).send("User deleted.")
-    } catch (error) {
-      res.status(500).send(error.message)
-    }
+    const user_id = req.params.id;
+    await User.deleteUserById(user_id);
+    res.status(200).send("User deleted.")
   }
 };

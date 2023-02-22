@@ -72,7 +72,7 @@ describe("User Model", () => {
     })
   });
 
-  describe("Get User Information method", () => {
+  describe("Get User By Id method", () => {
     it("returns an object with the user's account information", async () => {
       const newUser = new User(user);
       await newUser.createNewUser();

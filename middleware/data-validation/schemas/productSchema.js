@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 module.exports = Joi.object({
-  catagory: Joi.string()
+  category: Joi.string()
     .valid('Pants', 'Shoes', 'Tops', 'Accessories', 'Socks')
     .required(),
   name: Joi.string()

@@ -1,4 +1,4 @@
-const {validateNewUser, validateUserUpdates, validatePassword} = require('../middleware/data-validation/users');
+const { validateNewUser, validateUserUpdates, validatePassword } = require('../middleware/data-validation/users');
 const users = require('../controllers/users');
 const express = require('express');
 const userRouter = express.Router();

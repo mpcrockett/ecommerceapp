@@ -15,6 +15,7 @@ module.exports = {
     const updates = req.body;
     const product = new Product({product_id, ...updates});
     await product.updateProductById();
+    return res.status(201).send('Product updated.')
   },
   async getAllProducts(req, res) {
     const products = await Product.getAllProducts();
@@ -22,8 +23,8 @@ module.exports = {
   },
   async getProductById(req, res) {
     let product = await Product.getProductById(req.params.id);
-    const items = await Item.getItemsByProductId(req.params.id);
     if(!product) return res.status(400).send("Product not found.");
+    const items = await Item.getItemsByProductId(req.params.id);
     product.items = items;
     return res.status(200).send(product);
   },

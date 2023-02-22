@@ -36,13 +36,15 @@ const validateUserUpdates = (req, res, next) => {
 };
 
 const validatePassword = (req, res, next) => {
-  const { password_one, password_two } = req.body;
+  const { current_password, password_one, password_two } = req.body;
   if (password_one !== password_two) return res.status(400).send("New password entries do not match.");
 
   const { error } = passwordSchema.validate({ password: password_one });
 
   if(error) return res.status(400).send(error.message);
 
+  req.current_password = current_password;
+  req.new_password = password_one;
   next();
 };
 

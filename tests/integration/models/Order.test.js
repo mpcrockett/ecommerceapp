@@ -84,6 +84,16 @@ describe('Order model', () => {
       const checkDb = await pool.query('SELECT * FROM cart WHERE user_id = $1', [user.user_id]);
       expect(checkDb.rows.length).toEqual(0);
     });
+
+    it('returns false if an error occurs', async () => {
+      const cart = new Cart({ items: [items[0]], user_id: user.user_id });
+      await cart.addItemToCart();
+      cart.items = [items[1]];
+      await cart.addItemToCart();
+      order.user_id = 'Melissa';
+      const newOrder = await order.createNewOrder();
+      expect(newOrder).toBeFalsy();
+    });
   });
 
   describe('Get order by order ID method', () => {
@@ -133,12 +143,12 @@ describe('Order model', () => {
       expect(afterItem2).toEqual(beforeItem2 + items[1].quantity);
     });
 
-    // it('returns false if an error occurs', async () => {
-    //   const orderSpy = jest.spyOn(Order, 'cancelOrderById');
-    //   orderSpy.mockImplementationOnce(() => { throw new Error('Something went wrong') });
-    //   const cancelOrder = await Order.cancelOrderById(order.order_id);
-    //   expect(cancelOrder).toBeFalsy();
-    // });
+    it('returns false if an error occurs', async () => {
+      await order.createNewOrder();
+      order.order_id = 'Melissa';
+      const cancelOrder = await Order.cancelOrderById(order.order_id);
+      expect(cancelOrder).toBeFalsy();
+    });
   });
 
   describe('Delete all orders static method', () => {
