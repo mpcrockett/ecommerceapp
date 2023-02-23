@@ -3,7 +3,6 @@ const cart = require('../controllers/cart');
 const cartRouter = express.Router();
 const authenticate = require('../middleware/authentication/authenticate');
 const validateAddress = require('../middleware/data-validation/address');
-const validateCart = require('../middleware/data-validation/cart');
 
 // authenticates user
 cartRouter.get('/', authenticate, cart.getUserCart);

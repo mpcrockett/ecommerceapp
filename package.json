@@ -22,6 +22,7 @@
   "homepage": "https://github.com/mpcrockett/ecommerceapp#readme",
   "dependencies": {
     "@joi/date": "^2.1.0",
+    "@types/jest": "^29.4.0",
     "bcrypt": "^5.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
