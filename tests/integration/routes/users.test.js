@@ -229,7 +229,6 @@ describe('/api/users', () => {
         password_one: 'PassWORD12!@',
         password_two: 'PassWORD12!@'
       };
-
       const res = await request(server).put('/api/users/account/password').set('x-auth-token', token).send(body);
       expect(res.status).toBe(400);
     });

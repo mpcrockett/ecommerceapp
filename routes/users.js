@@ -7,12 +7,12 @@ const authorize = require('../middleware/authorization/authorize');
 
 // returns all users
 userRouter.get('/account', authenticate, users.getUserById);
+userRouter.put('/account', authenticate, validateUserUpdates, users.updateUser);
 userRouter.get('/account/orders', authenticate, users.getUserOrders);
 userRouter.get('/account/orders/:id', authenticate, users.getUserOrder);
-userRouter.post('/register', validateNewUser, users.createNewUser);
-userRouter.put('/account', authenticate, validateUserUpdates, users.updateUser);
-userRouter.put('/account/password', authenticate, validatePassword, users.changeUserPassword );
 userRouter.delete('/account/orders/:id', authenticate, users.cancelUserOrder);
+userRouter.post('/register', validateNewUser, users.createNewUser);
+userRouter.put('/account/password', authenticate, validatePassword, users.changeUserPassword);
 userRouter.delete('/:id', authorize, users.deleteUserById);
 
 

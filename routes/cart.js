@@ -6,8 +6,8 @@ const validateAddress = require('../middleware/data-validation/address');
 
 // authenticates user
 cartRouter.get('/', authenticate, cart.getUserCart);
-cartRouter.put('/update', authenticate, cart.updateCartItems);
 cartRouter.delete('/', authenticate, cart.deleteAllItems);
+cartRouter.put('/update', authenticate, cart.updateCartItems);
 cartRouter.post('/order', authenticate, validateAddress, cart.placeNewOrder);
 
 
