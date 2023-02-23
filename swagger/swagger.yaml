@@ -1,0 +1,756 @@
+swagger: "2.0"
+info:
+  description: "This is a sample server E-commerce server for an online running store. It was built as a portfolio project for Codecademy's Full-Stack Software Developer program."
+  version: "1.0.0"
+  title: "Ecommerce Server.0"
+  contact:
+    email: "mpcrockett@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:3000"
+basePath: "/api"
+tags:
+- name: "users"
+  description: "Endpoints for user information and operations"
+- name: "login"
+  description: "Endpoint for logging users into the system."
+- name: "products"
+  description: "Endpoints for products and product information"
+- name: "cart"
+  description: "Endpoints for users' carts."
+- name: "admin"
+  description: "Admin-only access"
+schemes:
+- "http"
+paths:
+# USER ENDPOINTS
+  /users/account:
+    get:
+      tags:
+      - "users"
+      summary: "Get a user profile"
+      description: "Requires user be authenticated/logged in."
+      operationId: "getUserById"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "401":
+          description: "Access denied."
+        "400":
+          description: "Invalid token."
+        "404":
+          description: "User not found."
+        "200":
+          description: "A user object."
+          schema:
+            type: object
+            properties:
+              username:
+                type: "string"
+                description: "User's username."
+              first_name:
+                type: "string"
+                description: "User's first name."
+              last_name:
+                type: "string"
+                description: "User's last name."
+              email:
+                type: "string"
+                description: "User's email."
+              birthday:
+                type: "string"
+                description: "User's birthday. Will return null if no birthday is on file for given user."
+              loyalty_acct:
+                type: "string"
+                description: "User's loyalty account number. Will return null if user is not a loyalty customer."
+    put:
+      tags:
+        - "users"
+      summary: "Update user account"
+      description: "Allows users to update their name and birthday"
+      operationId: "updateUser"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "New user object."
+        required: true
+        schema:
+            type: object
+            properties:
+              first_name:
+                type: "string"
+                required: true
+                description: "User's first name."
+              last_name:
+                type: "string"
+                required: true
+                description: "User's last name."
+              birthday:
+                type: "string"
+                required: false
+                description: "Format YYYY-MM-DD"
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "User updated."
+        "401":
+          description: "Access denied."
+        "400":
+          description: "Invalid token."
+  /users/account/orders:
+    get:
+      tags:
+      - "users"
+      summary: "Get user orders"
+      description: "Requires user be authenticated/logged in."
+      operationId: "getUserOrders"
+      produces:
+      - "application/json"
+      parameters:
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "An array with all user orders."
+          schema:
+            type: "array"
+            items:
+              $ref: '#/components/schemas/Orders-Order'
+        "404":
+          description: "No orders found."
+        "401":
+          description: "Access denied."
+        "400":
+          description: "Invalid token."
+  /users/account/orders/:id:
+    get:
+      tags:
+      - "users"
+      summary: "Get a user order"
+      description: "Requires user be authenticated/logged in."
+      operationId: "getUserOrder"
+      produces:
+      - "application/json"
+      parameters:
+      - in: path
+        name: "order_id"
+        schema:
+          type: integer
+          required: true
+          description: "Numeric ID of the order to get"
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "successful operation, one order object"
+          schema:
+            $ref: '#/components/schemas/Order'
+        "404":
+          description: "Order not found."
+        "401":
+          description: "Access denied."
+        "400":
+          description: "Invalid token."
+    delete:
+      tags:
+        - "users"
+      summary: "Cancel user order"
+      description: "Cancels a users order, if order is still processing."
+      operationId: "cancelUserOrder"
+      parameters:
+      - in: path
+        name: "order_id"
+        schema:
+          type: "integer"
+          required: true
+          description: "Id of order"
+      - in: header
+        header: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "Order successfully cancelled."
+        "401":
+          description: "Access denied."
+        "400":
+          description: "Invalid token."
+        "403":
+          description: "Cannot cancel order"
+  /users/register:
+    post:
+      tags:
+      - "users"
+      summary: "Register new user"
+      description: "Registers a new user and creates a new user profile."
+      operationId: "createNewUser"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "New user object."
+        required: true
+        schema:
+            type: object
+            properties:
+              username:
+                type: "string"
+                required: true
+                description: "User's unique username."
+              password:
+                type: "string"
+                required: true
+                description: "User password. Must contain 2 special characters, 2 uppercase, 2 lowercase, 2 numbers. Mininum 8 characters."
+              first_name:
+                type: "string"
+                required: true
+                description: "User's first name."
+              last_name:
+                type: "string"
+                required: true
+                description: "User's last name."
+              email:
+                type: "string"
+                required: true
+                description: "User's email."
+              birthday:
+                type: "string"
+                required: false
+                description: "Format YYYY-MM-DD"
+      responses:
+        "201":
+          description: "User successfully registered."
+          headers: 
+            x-auth-token:
+              schema:
+                type: "string"
+              description: "JSON web token."          
+        "400":
+          description: "Invalid input with error message."
+  /users/:id:
+    delete:
+      tags:
+      - "users"
+      - "admin"
+      summary: "Delete user"
+      description: "Admin endpoint for deleting a user."
+      operationId: "deleteUserById"
+      parameters:
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration. MUST be user admin."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "User deleted."
+        "403":
+          description: "Access denied."
+# PRODUCT ENDPOINTS
+  /products:
+    get:
+      tags:
+        - "products"
+      summary: "Get  all products"
+      description: "Fetches all products"
+      operationId: "getAllProducts"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+              type: "array"
+              items:
+                $ref: '#/components/schemas/Product'
+    post:
+      tags:
+        - "products"
+      summary: "Create a new product"
+      description: "Creates a new product and adds it to the catalog."
+      operationId: "createNewProduct"
+      parameters:
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration. MUST be user admin."
+        required: true
+        schema:
+          type: "string"
+      - in: body
+        name: "body"
+        description: "New product object."
+        required: true
+        schema:
+          $ref: '#/components/schemas/NewProduct'
+      responses:
+        "201":
+          description: "Product created."
+        "403":
+          description: "Access Denied."
+  /products/:id:
+    get:
+      tags:
+        - "products"
+      summary: "Gets a product by ID"
+      description: "Gets a product and corresponding items by id."
+      operationId: "getProductById"
+      parameters:
+      - in: path
+        name: "product_id"
+        schema:
+          type: integer
+          required: true
+          description: "Product ID of the product and items to get"
+      responses:
+        "200":
+          description: "Product object with items"
+          schema:
+            $ref: '#/components/schemas/ProductItems'
+        "400":
+          description: "Product not found"
+    post:
+      tags:
+        - "products"
+        - "admin"
+      summary: "Add Items to Inventory admin endpoint."
+      description: "Adds items of a product to the inventory."
+      operationId: "addItemsToInventory"
+      parameters:
+      - in: path
+        name: "product_id"
+        schema:
+        type: integer
+        required: true
+        description: "Product ID of the produc"
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration. MUST be user admin."
+        required: true
+        schema:
+          type: "string"
+      - in: body
+        name: "item object"
+        required: true
+        schema:
+          $ref: '#/components/schemas/NewItemsToInventory'
+      responses:
+        "201":
+          description: "Items successfully added to inventory."
+        "403":
+          description: "Access Denied."
+    put:
+      tags:
+        - "products"
+        - "admin"
+      summary: "Update product information."
+      operationId: "updateProduct"
+      parameters:
+      - in: path
+        name: "product_id"
+        schema:
+          type: integer
+          required: true
+          description: "Product ID of the product and items to get"
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration. MUST be user admin."
+        required: true
+        schema:
+          type: "string"
+      - in: body
+        name: "product updates"
+        description: "An object with updates to a product."
+        schema:
+          $ref: '#/components/schemas/NewProduct'
+      responses:
+        "201":
+          description: "Product successfully updated."
+        "403":
+          description: "Access Denied."
+    delete:
+      tags:
+        - "products"
+        - "admin"
+      summary: "Delete a product"
+      operationId: "deleteProductById"
+      parameters:
+      - in: path
+        name: "product_id"
+        schema:
+          type: integer
+          required: true
+          description: "Product ID of the product and items to get"
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login or registration. MUST be user admin."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "Product successfully deleted."
+        "400":
+          description: "Access Denied."
+  /products/:id/items/add-to-cart:
+    post:
+      tags:
+        - "products"
+      summary: "Adds an item to users cart"
+      operationId: "addItemToCart"
+      parameters:
+      - in: path
+        name: "product_id"
+        schema:
+          type: integer
+          required: true
+          description: "Product ID of the item to add to cart"
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login/registration."
+        required: "true"
+      - in: body
+        name: "item object"
+        schema:
+          type: "object"
+          properties:
+            item_id: 
+              type: "integer"
+              description: "Id of item to be added to cart."
+              required: "true"
+            quantity:
+              type: "integer"
+              description: "Number of items to be added."
+              required: "true"
+      responses:
+        "201":
+          description: "Item added to cart."
+        "400":
+          description: "Insufficient stock or invalid token."
+        "401":
+          description: "Access denied."
+# CART ENDPOINTS
+  /cart:
+    get:
+      tags:
+        - "cart"
+      summary: "Get a users cart"
+      operationId: "getUserCart"
+      parameters:
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login/registration."
+        required: true
+      responses:
+        "200":
+          description: "Item successfully added to cart"
+          schema:
+            $ref: '#/components/schemas/Cart'
+        "400":
+          description: "Invalid token."
+        "401":
+          description: "Access denied."
+    delete:
+      tags:
+        - "cart"
+      summary: "Clears a users cart"
+      operationId: "deleteAllCartItems"
+      parameters:
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login/registration."
+        required: true
+      responses:
+        "200":
+          description: "Cart cleared."
+        "400":
+          description: "Invalid token."
+        "401":
+          description: "Access denied."
+  /cart/update:
+    post:
+      tags:
+        - "cart"
+      summary: "Updates a users cart"
+      operationId: "updateCartItems"
+      parameters:
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login/registration."
+        required: true
+      - in: body
+        required: true
+        name: "cart update object"
+        description: "Items and quantities to be updated."
+        schema:
+          $ref: '#/components/schemas/CartUpdate'
+      responses:
+        "200":
+          description: "Cart cleared."
+        "400":
+          description: "Invalid token."
+        "401":
+          description: "Access denied."
+  /cart/order:
+    post:
+      tags:
+        - "cart"
+      summary: "Places a new order of items in cart"
+      operationId: "placeNewOrder"
+      parameters:
+      - in: header
+        name: "x-auth-token"
+        description: "JWT returned to client at successful user login/registration."
+        required: true
+      - in: body
+        required: true
+        name: "cart update object"
+        description: "Items and quantities to be updated."
+        schema:
+          $ref: '#/components/schemas/Address'
+      responses:
+        "201": 
+          description: "Order placed."
+        "400":
+          description: "Invalid token."
+        "401":
+          description: "Access denied."
+        "500":
+          description: "Server Error."
+# Login Endpoint
+  /login:
+    post:
+      tags:
+        - "login"
+      summary: "Endpoint for user login"
+      operationId: "login"
+      parameters:
+      - in: body
+        required: true
+        name: "Username and password object"
+        description: "Users credentials for logging into the system."
+        type: "object"
+        properties:
+          username:
+            type: "string"
+            required: "true"
+          password:
+            type: "string"
+            required: "true"
+      responses:
+        "200": 
+          description: "User successfully registered."
+          headers: 
+            x-auth-token:
+              schema:
+                type: "string"
+              description: "JSON web token."
+        "401":
+          description: "Invalid username or password."     
+components:
+  schemas:
+    Orders-Order:
+      type: "object"
+      description: "An condensed order object sent in an array of all orders"
+      properties:
+        order_id: 
+          type: "integer"
+          description: "The id of the order"
+        order_total: 
+          type: "string"
+          description: "The total order invoice in USD"
+        free_shipping:
+          type: "boolean"
+          description: "Whether or not the order qualified for free shipping"
+        order_status:
+          type: "string"
+          description: "The status of the order: processing, shipped, completed"
+    Product:
+      type: "object"
+      description: "A product object"
+      properties:
+        name: 
+          type: "string"
+          description: "Name of product"
+        Description:
+          type: "string"
+          description: "Description of the product"
+        gender:
+          type: "string"
+          desciption: "Gender category of product: Men, Women, Unisex"
+        price:
+          type: "string"
+          description: "Price of product in USD"
+        brand:
+          type: "string"
+          description: "Brand of product"
+    NewProduct:
+      type: "object"
+      description: "A product object"
+      properties:
+        category:
+          type: "string"
+          description: "'Pants', 'Shoes', 'Tops', 'Accessories', or 'Socks'"
+        name: 
+          type: "string"
+          description: "Name of product"
+        Description:
+          type: "string"
+          description: "Description of the product"
+        gender:
+          type: "string"
+          desciption: "Gender category of product: Men, Women, Unisex"
+        price:
+          type: "string"
+          description: "Price of product in USD"
+        brand:
+          type: "string"
+          description: "Brand of product"
+    ProductItems:
+      type: "object"
+      description: "Product object with corresponding items in inventory"
+      properties:
+        name: 
+          type: "string"
+          description: "Name of product"
+        Description:
+          type: "string"
+          description: "Description of the product"
+        gender:
+          type: "string"
+          description: "Gender category of product: Men, Women, Unisex"
+        price:
+          type: "string"
+          description: "Price of product in USD"
+        brand:
+          type: "string"
+          description: "Brand of product"
+        items:
+          type: "array"
+          description: "Array of item objects."
+          items:
+            type: "object"
+            properties:
+              item_id:
+                type: "integer"
+                description: "Numerical id of the item"
+              product_id:
+                type: "integer"
+                description: "Numerical id of the product"
+              size:
+                type: "string"
+                description: "Item size"
+              number_in_stock:
+                type: "integer"
+                description: "Number of item available in inventory"
+              color:
+                type: "string"
+                description: "Item color."
+    NewItemsToInventory:
+      type: "object"
+      description: "Object with parameters to add new items to inventory."
+      properties:
+        product_id: 
+          type: "integer"
+          required: "true"
+          description: "Numerical id of items product"
+        size:
+          type: "string"
+          required: "true"
+          description: "size of item"
+        number_in_stock:
+          type: "integer"
+          required: "true"
+          description: "Number of item to be added to inventory"
+        color:
+          type: "string"
+          required: "true"
+          description: "Color of item being added."
+    Cart:
+      type: "object"
+      description: "A user cart object"
+      properties:
+        user_id: 
+          type: "integer"
+          description: "The current users id"
+        items:
+          type: "array"
+          description: "Items in the users cart"
+          items:
+            type: "object"
+            properties:
+              item_id: 
+                type: "integer"
+              product_id:
+                type: "integer"
+              name:
+                type: "string"
+              size:
+                type: "string"
+              quantity:
+                type: "integer"
+        free_shipping:
+          type: "boolean"
+          description: "Whether the current cart qualifies for free shipping."
+        order_total:
+          type: "integer"
+          description: "The current subtotal of items in the cart in USD."
+    CartUpdate:
+      type: "array"
+      description: "array of item objects to update in cart."
+      items:
+        type: "object"
+        properties:
+          item_id: 
+            type: "integer"
+            description: "Id of item to be updated in cart"
+            required: "true"
+          quantity:
+            type: "integer"
+            description: "quantity item should be updated to."
+            required: "true"
+    Address:
+      description: "An address object."
+      type: "object"
+      properties:
+        first_name: 
+          type: "string"
+        last_name:
+          type: "string"
+        street_address_1: 
+          type: "string"
+        street_address_2: 
+          type: "string"
+        city: 
+          type: "string"
+        state: 
+          type: "string"
+        zipcode:
+          type: "string"
+    Order:
